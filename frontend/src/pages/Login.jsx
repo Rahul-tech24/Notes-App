@@ -49,7 +49,7 @@ function Login() {
         className="bg-white p-8 shadow-md rounded w-96"
       >
 
-        <h2 className="text-xl mb-4">Login</h2>
+        <h2 className="text-xl text-red-500 mb-4">Login</h2>
 
         <input
           name="email"
