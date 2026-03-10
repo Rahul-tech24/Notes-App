@@ -1,23 +1,41 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter,Routes,Route } from "react-router-dom";
 
+import Home from "../pages/Home";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import Dashboard from "../pages/Dashboard";
 
-const Router = () => {
-  return (
-    <BrowserRouter>
-      <Routes>
+import ProtectedRoute from "../components/ProtectedRoute";
 
-        <Route path="/login" element={<Login />} />
+function Router(){
 
-        <Route path="/register" element={<Register />} />
+ return(
 
-        <Route path="/" element={<Dashboard />} />
+ <BrowserRouter>
 
-      </Routes>
-    </BrowserRouter>
-  );
-};
+ <Routes>
+
+ <Route path="/" element={<Home/>} />
+
+ <Route path="/login" element={<Login/>} />
+
+ <Route path="/register" element={<Register/>} />
+
+ <Route
+  path="/dashboard"
+  element={
+   <ProtectedRoute>
+    <Dashboard/>
+   </ProtectedRoute>
+  }
+ />
+
+ </Routes>
+
+ </BrowserRouter>
+
+ );
+
+}
 
 export default Router;

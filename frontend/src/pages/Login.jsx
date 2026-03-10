@@ -18,7 +18,7 @@ function Login() {
 
       localStorage.setItem("token", data.token);
 
-      navigate("/");
+      navigate("/dashboard");
 
     }
   });

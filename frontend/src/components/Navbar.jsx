@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 function Navbar() {
 
@@ -16,8 +17,10 @@ function Navbar() {
 
     <div className="flex justify-between items-center p-4 border-b">
 
-      <h1 className="text-xl font-bold">Knowledge System</h1>
-
+      <Link to="/dashboard" className="text-xl font-bold">
+ Knowledge System
+      </Link>
+      
       <button
         onClick={handleLogout}
         className="text-red-500"
