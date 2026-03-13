@@ -1,16 +1,11 @@
-function SearchBar({ search,setSearch }) {
-
+function SearchBar({ value, onChange }) {
   return (
-
     <input
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
       placeholder="Search notes..."
-      value={search}
-      onChange={(e)=>setSearch(e.target.value)}
-      className="border p-2 w-full mb-6"
+      className="border p-2 w-full mb-4"
     />
-
   );
-
 }
-
 export default SearchBar;

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery,useMutation,useQueryClient } from "@tanstack/react-query";
 import { getNotes,createNote,deleteNote } from "../api/notes";
 import api from "../api/axios";
+import useDebounce from "../hooks/useDebounce";
 
 import Navbar from "../components/Navbar";
 import NoteForm from "../components/NoteForm";
@@ -13,12 +14,13 @@ function Dashboard(){
 
  const queryClient = useQueryClient();
 
- const [search,setSearch] = useState("");
+    const [search, setSearch] = useState("");
+    const debouncedSearch = useDebounce(search, 400);
  const [page,setPage] = useState(1);
 
  const {data,isLoading} = useQuery({
-  queryKey:["notes",page,search],
-  queryFn:()=>getNotes({page,search})
+  queryKey:["notes",page,debouncedSearch],
+  queryFn:()=>getNotes({page, search: debouncedSearch})
  });
 
  const createMutation = useMutation({
@@ -51,9 +53,12 @@ function Dashboard(){
  />
 
  <SearchBar
-  search={search}
-  setSearch={setSearch}
- />
+  value={search}
+  onChange={(v) => {
+    setPage(1);        // reset to page 1 when searching
+    setSearch(v);
+  }}
+/>
 
  <div className="space-y-4">
 
