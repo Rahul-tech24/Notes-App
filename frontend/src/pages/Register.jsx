@@ -44,7 +44,10 @@ function Register() {
 
   return (
 
+
     <div className="flex justify-center items-center h-screen">
+
+      {/* so are you saying that this is not a form of a mobile apiications? I mean, it is a form but it is not a // */}
 
       <form
         onSubmit={handleSubmit}

@@ -17,6 +17,7 @@ function NoteCard({ note, onDelete, onUpdate }) {
 
   };
 
+
   return (
 
     <div className="border p-4 flex justify-between">
