@@ -1,3 +1,4 @@
+-+9
 function SearchBar({ value, onChange }) {
   return (
     <input

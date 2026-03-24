@@ -22,7 +22,7 @@ function Dashboard(){
   queryKey:["notes",page,debouncedSearch],
   queryFn:()=>getNotes({page, search: debouncedSearch})
  });
-
+  
  const createMutation = useMutation({
   mutationFn:createNote,
   onSuccess:()=>queryClient.invalidateQueries(["notes"])

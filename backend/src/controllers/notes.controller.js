@@ -60,8 +60,8 @@ export const updateNoteController = asyncHandler(async (req, res) => {
       req.params.id,
       req.user._id,
       req.body
-    );
-
+  );
+  
     res.json(updatedNote);
 
   });
