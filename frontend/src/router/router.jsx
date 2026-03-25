@@ -6,6 +6,8 @@ import Register from "../pages/Register";
 import Dashboard from "../pages/Dashboard";
 
 import ProtectedRoute from "../components/ProtectedRoute";
+import ErrorBoundary from "../components/ErrorBoundary";
+
 
 function Router(){
 
@@ -23,10 +25,12 @@ function Router(){
 
  <Route
   path="/dashboard"
-  element={
-   <ProtectedRoute>
-    <Dashboard/>
-   </ProtectedRoute>
+                 element={
+      <ErrorBoundary>   
+      <ProtectedRoute>
+         <Dashboard/>
+      </ProtectedRoute>
+      </ErrorBoundary>
   }
  />
 
@@ -35,7 +39,8 @@ function Router(){
  </BrowserRouter>
 
  );
-
 }
 
 export default Router;
+
+

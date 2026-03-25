@@ -10,14 +10,15 @@ import NoteCard from "../components/NoteCard";
 import SearchBar from "../components/SearchBar";
 import Pagination from "../components/Pagination";
 
-function Dashboard(){
+function Dashboard() {
+  
 
  const queryClient = useQueryClient();
 
     const [search, setSearch] = useState("");
     const debouncedSearch = useDebounce(search, 400);
  const [page,setPage] = useState(1);
-
+ 
  const {data,isLoading} = useQuery({
   queryKey:["notes",page,debouncedSearch],
   queryFn:()=>getNotes({page, search: debouncedSearch})
@@ -37,15 +38,20 @@ function Dashboard(){
   mutationFn:({id,data})=>api.put(`/notes/${id}`,data),
   onSuccess:()=>queryClient.invalidateQueries(["notes"])
  });
+  
 
  if(isLoading) return <p>Loading...</p>;
 
+ 
+   
+  
  return(
 
  <>
 
- <Navbar/>
+     <Navbar />
 
+     
  <div className="max-w-3xl mx-auto p-10">
 
  <NoteForm
@@ -88,3 +94,4 @@ function Dashboard(){
 }
 
 export default Dashboard;
+
