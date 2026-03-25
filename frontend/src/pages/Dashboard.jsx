@@ -9,6 +9,7 @@ import NoteForm from "../components/NoteForm";
 import NoteCard from "../components/NoteCard";
 import SearchBar from "../components/SearchBar";
 import Pagination from "../components/Pagination";
+import DashboardSkeleton from "../components/DashboardSkeleton";
 
 function Dashboard() {
   
@@ -40,7 +41,7 @@ function Dashboard() {
  });
   
 
- if(isLoading) return <p>Loading...</p>;
+ if (isLoading) return <DashboardSkeleton />;
 
  
    
