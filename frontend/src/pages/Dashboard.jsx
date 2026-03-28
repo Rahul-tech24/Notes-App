@@ -26,14 +26,111 @@ function Dashboard() {
  });
   
  const createMutation = useMutation({
-  mutationFn:createNote,
-  onSuccess:()=>queryClient.invalidateQueries(["notes"])
+  mutationFn: createNote,
+
+  onMutate: async (newNote) => {
+    await queryClient.cancelQueries({ queryKey: ["notes"] });
+
+    const previousNotesData = queryClient.getQueryData([
+      "notes",
+      page,
+      debouncedSearch,
+    ]);
+
+    const tempNote = {
+      _id: "temp-" + Date.now(),
+      title: newNote.title,
+      content: newNote.content,
+      createdAt: new Date().toISOString(),
+      optimistic: true
+    };
+
+    queryClient.setQueryData(
+      ["notes", page, debouncedSearch],
+      (oldData) => {
+        if (!oldData) return oldData;
+
+        return {
+          ...oldData,
+          notes: [tempNote, ...oldData.notes],
+        };
+      }
+    );
+
+    return { previousNotesData, tempNote };
+  },
+
+  onError: (error, newNote, context) => {
+    if (context?.previousNotesData) {
+      queryClient.setQueryData(
+        ["notes", page, debouncedSearch],
+        context.previousNotesData
+      );
+    }
+  },
+
+  onSuccess: (serverNote, newNote, context) => {
+    queryClient.setQueryData(
+      ["notes", page, debouncedSearch],
+      (oldData) => {
+        if (!oldData) return oldData;
+
+        return {
+          ...oldData,
+          notes: oldData.notes.map((note) =>
+            note._id === context.tempNote._id ? serverNote : note
+          ),
+        };
+      }
+    );
+  },
+
+  onSettled: () => {
+    queryClient.invalidateQueries({ queryKey: ["notes"] });
+  },
  });
+  
 
  const deleteMutation = useMutation({
-  mutationFn:deleteNote,
-  onSuccess:()=>queryClient.invalidateQueries(["notes"])
- });
+  mutationFn: deleteNote,
+
+  onMutate: async (noteId) => {
+    await queryClient.cancelQueries({ queryKey: ["notes"] });
+
+    const previousNotesData = queryClient.getQueryData([
+      "notes",
+      page,
+      debouncedSearch,
+    ]);
+
+    queryClient.setQueryData(
+      ["notes", page, debouncedSearch],
+      (oldData) => {
+        if (!oldData) return oldData;
+
+        return {
+          ...oldData,
+          notes: oldData.notes.filter((note) => note._id !== noteId),
+        };
+      }
+    );
+
+    return { previousNotesData };
+  },
+
+  onError: (error, noteId, context) => {
+    if (context?.previousNotesData) {
+      queryClient.setQueryData(
+        ["notes", page, debouncedSearch],
+        context.previousNotesData
+      );
+    }
+  },
+
+  onSettled: () => {
+    queryClient.invalidateQueries({ queryKey: ["notes"] });
+  },
+});
 
  const updateMutation = useMutation({
   mutationFn:({id,data})=>api.put(`/notes/${id}`,data),
