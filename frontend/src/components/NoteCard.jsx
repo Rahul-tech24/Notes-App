@@ -1,6 +1,9 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function NoteCard({ note, onDelete, onUpdate }) {
+
+  const navigate = useNavigate();
 
   const [editing,setEditing] = useState(false);
   const [title,setTitle] = useState(note.title);
@@ -19,6 +22,7 @@ function NoteCard({ note, onDelete, onUpdate }) {
 
 
   return (
+    <div onClick={() => navigate(`/notes/${note._id}`)}>
 
     <div className="border p-4 flex justify-between">
 
@@ -75,6 +79,8 @@ function NoteCard({ note, onDelete, onUpdate }) {
         </button>
 
       </div>
+
+    </div>
 
     </div>
 

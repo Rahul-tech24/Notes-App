@@ -4,6 +4,7 @@ import Home from "../pages/Home";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import Dashboard from "../pages/Dashboard";
+import NoteDetail from "../pages/NoteDetail";
 
 import ProtectedRoute from "../components/ProtectedRoute";
 import ErrorBoundary from "../components/ErrorBoundary";
@@ -34,6 +35,8 @@ function Router(){
   }
  />
 
+          
+   <Route path="/notes/:id" element={<NoteDetail />} />
  </Routes>
 
  </BrowserRouter>
