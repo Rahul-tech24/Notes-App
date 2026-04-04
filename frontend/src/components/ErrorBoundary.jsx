@@ -6,7 +6,7 @@ class ErrorBoundary extends React.Component {
     this.state = { hasError: false };
   }
 
-  static getDerivedStateFromError(error) {
+  static getDerivedStateFromError() {
     return { hasError: true };
   }
 
@@ -22,20 +22,19 @@ class ErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-100">
-          <div className="bg-white p-8 rounded-xl shadow-md text-center">
-            <h2 className="text-xl font-semibold mb-2">
-              Something went wrong
-            </h2>
-            <p className="text-gray-500 mb-4">
-              Please try refreshing the page.
-            </p>
-            <button
-              onClick={this.handleRetry}
-              className="bg-black text-white px-4 py-2 rounded"
-            >
-              Retry
-            </button>
+        <div className="min-h-screen px-4 py-5 sm:px-6">
+          <div className="app-frame flex min-h-[calc(100vh-2.5rem)] items-center justify-center">
+            <div className="surface-card w-full max-w-xl p-8 text-center sm:p-10">
+              <p className="section-kicker mb-3">Unexpected State</p>
+              <h2 className="title-md mb-3">Something went wrong</h2>
+              <p className="body-muted mb-6">
+                The page hit an unexpected error. A refresh usually gets things
+                back on track.
+              </p>
+              <button onClick={this.handleRetry} className="btn btn-primary">
+                Refresh Page
+              </button>
+            </div>
           </div>
         </div>
       );

@@ -1,37 +1,27 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
+import ApiError from "../utils/apiError.js";
 
 const protect = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
 
-  let token;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return next(new ApiError(401, "No token provided"));
+  }
 
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer")
-  ) {
+  try {
+    const token = authHeader.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.userId).select("-password");
 
-    try {
-
-      token = req.headers.authorization.split(" ")[1];
-
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-      const user = await User.findById(decoded.userId).select("-password");
-
-      req.user = user;
-
-      next();
-
-    } catch (error) {
-
-      res.status(401).json({ message: "Not authorized" });
-
+    if (!user) {
+      return next(new ApiError(401, "User no longer exists"));
     }
 
-  } else {
-
-    res.status(401).json({ message: "No token provided" });
-
+    req.user = user;
+    return next();
+  } catch (error) {
+    return next(new ApiError(401, "Not authorized"));
   }
 };
 

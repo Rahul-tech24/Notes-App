@@ -1,12 +1,42 @@
 const errorHandler = (err, req, res, next) => {
+  let statusCode = err.statusCode ?? res.statusCode;
+  let message = err.message || "Server error";
+  let details = err.details;
 
-  const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+  if (!statusCode || statusCode < 400) {
+    statusCode = 500;
+  }
 
-  res.status(statusCode).json({
-    message: err.message,
-    stack: process.env.NODE_ENV === "production" ? null : err.stack
-  });
+  if (err.name === "CastError") {
+    statusCode = 400;
+    message = `Invalid ${err.path}`;
+  }
 
+  if (err.name === "ValidationError") {
+    statusCode = 400;
+    message = "Validation failed";
+    details = Object.values(err.errors).map(({ path, message: fieldMessage }) => ({
+      path,
+      message: fieldMessage
+    }));
+  }
+
+  if (err.code === 11000) {
+    statusCode = 409;
+    message = "Resource already exists";
+  }
+
+  const payload = { message };
+
+  if (details) {
+    payload.details = details;
+  }
+
+  if (process.env.NODE_ENV !== "production") {
+    payload.stack = err.stack;
+  }
+
+  res.status(statusCode).json(payload);
 };
 
 export default errorHandler;

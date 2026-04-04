@@ -1,195 +1,132 @@
 import { useState } from "react";
-import { useQuery,useMutation,useQueryClient } from "@tanstack/react-query";
-import { getNotes,createNote,deleteNote } from "../api/notes";
-import api from "../api/axios";
+import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { getNotes } from "../api/notes";
 import useDebounce from "../hooks/useDebounce";
 
 import Navbar from "../components/Navbar";
-import NoteForm from "../components/NoteForm";
 import NoteCard from "../components/NoteCard";
 import SearchBar from "../components/SearchBar";
 import Pagination from "../components/Pagination";
 import DashboardSkeleton from "../components/DashboardSkeleton";
 
 function Dashboard() {
-  
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 400);
+  const [page, setPage] = useState(1);
 
- const queryClient = useQueryClient();
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ["notes", page, debouncedSearch],
+    queryFn: () => getNotes({ page, search: debouncedSearch })
+  });
 
-    const [search, setSearch] = useState("");
-    const debouncedSearch = useDebounce(search, 400);
- const [page,setPage] = useState(1);
- 
- const {data,isLoading} = useQuery({
-  queryKey:["notes",page,debouncedSearch],
-  queryFn:()=>getNotes({page, search: debouncedSearch})
- });
-  
- const createMutation = useMutation({
-  mutationFn: createNote,
-
-  onMutate: async (newNote) => {
-    await queryClient.cancelQueries({ queryKey: ["notes"] });
-
-    const previousNotesData = queryClient.getQueryData([
-      "notes",
-      page,
-      debouncedSearch,
-    ]);
-
-    const tempNote = {
-      _id: "temp-" + Date.now(),
-      title: newNote.title,
-      content: newNote.content,
-      createdAt: new Date().toISOString(),
-      optimistic: true
-    };
-
-    queryClient.setQueryData(
-      ["notes", page, debouncedSearch],
-      (oldData) => {
-        if (!oldData) return oldData;
-
-        return {
-          ...oldData,
-          notes: [tempNote, ...oldData.notes],
-        };
-      }
+  if (isLoading) {
+    return (
+      <>
+        <Navbar />
+        <DashboardSkeleton />
+      </>
     );
+  }
 
-    return { previousNotesData, tempNote };
-  },
+  if (isError) {
+    return (
+      <>
+        <Navbar />
 
-  onError: (error, newNote, context) => {
-    if (context?.previousNotesData) {
-      queryClient.setQueryData(
-        ["notes", page, debouncedSearch],
-        context.previousNotesData
-      );
-    }
-  },
-
-  onSuccess: (serverNote, newNote, context) => {
-    queryClient.setQueryData(
-      ["notes", page, debouncedSearch],
-      (oldData) => {
-        if (!oldData) return oldData;
-
-        return {
-          ...oldData,
-          notes: oldData.notes.map((note) =>
-            note._id === context.tempNote._id ? serverNote : note
-          ),
-        };
-      }
+        <div className="px-4 pb-10 pt-6 sm:px-6">
+          <div className="app-frame">
+            <div className="surface-card p-8 sm:p-10">
+              <p className="section-kicker mb-3">Could Not Load Notes</p>
+              <h1 className="title-md mb-3">
+                Your workspace is temporarily unavailable.
+              </h1>
+              <p className="body-muted">
+                {error?.response?.data?.message ||
+                  "Please refresh the page and try again."}
+              </p>
+            </div>
+          </div>
+        </div>
+      </>
     );
-  },
+  }
 
-  onSettled: () => {
-    queryClient.invalidateQueries({ queryKey: ["notes"] });
-  },
- });
-  
+  const notes = data?.notes ?? [];
+  const totalNotes = data?.total ?? 0;
+  const searchLabel = debouncedSearch
+    ? `Showing results for "${debouncedSearch}"`
+    : "All notes in your workspace";
 
- const deleteMutation = useMutation({
-  mutationFn: deleteNote,
+  return (
+    <>
+      <Navbar />
 
-  onMutate: async (noteId) => {
-    await queryClient.cancelQueries({ queryKey: ["notes"] });
+      <div className="px-4 pb-10 pt-6 sm:px-6">
+        <div className="app-frame space-y-6">
+          <section className="surface-card p-6 sm:p-7">
+            <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+              <div className="space-y-2">
+                <p className="section-kicker">Workspace</p>
+                <h1 className="title-lg">Your note library</h1>
+                <p className="body-muted">{searchLabel}</p>
+              </div>
 
-    const previousNotesData = queryClient.getQueryData([
-      "notes",
-      page,
-      debouncedSearch,
-    ]);
+              <div className="flex flex-wrap gap-3">
+                <Link to="/notes/new" className="btn btn-primary">
+                  Create Note
+                </Link>
+                <span className="badge">{totalNotes} notes</span>
+              </div>
+            </div>
 
-    queryClient.setQueryData(
-      ["notes", page, debouncedSearch],
-      (oldData) => {
-        if (!oldData) return oldData;
+            <div className="mt-5">
+              <SearchBar
+                value={search}
+                onChange={(value) => {
+                  setPage(1);
+                  setSearch(value);
+                }}
+              />
+            </div>
+          </section>
 
-        return {
-          ...oldData,
-          notes: oldData.notes.filter((note) => note._id !== noteId),
-        };
-      }
-    );
+          {notes.length === 0 ? (
+            <div className="surface-card p-8 sm:p-10">
+              <h2 className="title-md mb-3">
+                {debouncedSearch ? "No notes found." : "No notes yet."}
+              </h2>
+              <p className="body-muted">
+                {debouncedSearch
+                  ? "Try a different search."
+                  : "Create your first note to get started."}
+              </p>
 
-    return { previousNotesData };
-  },
+              {!debouncedSearch ? (
+                <div className="mt-6">
+                  <Link to="/notes/new" className="btn btn-primary">
+                    Create Note
+                  </Link>
+                </div>
+              ) : null}
+            </div>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2">
+              {notes.map((note) => (
+                <NoteCard key={note._id} note={note} />
+              ))}
+            </div>
+          )}
 
-  onError: (error, noteId, context) => {
-    if (context?.previousNotesData) {
-      queryClient.setQueryData(
-        ["notes", page, debouncedSearch],
-        context.previousNotesData
-      );
-    }
-  },
-
-  onSettled: () => {
-    queryClient.invalidateQueries({ queryKey: ["notes"] });
-  },
-});
-
- const updateMutation = useMutation({
-  mutationFn:({id,data})=>api.put(`/notes/${id}`,data),
-  onSuccess:()=>queryClient.invalidateQueries(["notes"])
- });
-  
-
- if (isLoading) return <DashboardSkeleton />;
-
- 
-   
-  
- return(
-
- <>
-
-     <Navbar />
-
-     
- <div className="max-w-3xl mx-auto p-10">
-
- <NoteForm
-  onCreate={(data)=>createMutation.mutate(data)}
- />
-
- <SearchBar
-  value={search}
-  onChange={(v) => {
-    setPage(1);        // reset to page 1 when searching
-    setSearch(v);
-  }}
-/>
-
- <div className="space-y-4">
-
- {data.notes.map(note=>(
-  <NoteCard
-   key={note._id}
-   note={note}
-   onDelete={(id)=>deleteMutation.mutate(id)}
-   onUpdate={(id,data)=>updateMutation.mutate({id,data})}
-  />
- ))}
-
- </div>
-
- <Pagination
-  page={page}
-  setPage={setPage}
-  totalPages={data.totalPages}
- />
-
- </div>
-
- </>
-
- );
-
+          <Pagination
+            page={page}
+            setPage={setPage}
+            totalPages={data.totalPages}
+          />
+        </div>
+      </div>
+    </>
+  );
 }
 
 export default Dashboard;
-

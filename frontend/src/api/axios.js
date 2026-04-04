@@ -2,13 +2,14 @@ import axios from "axios";
 import { queryClient } from "../lib/queryClient";
 
 const api = axios.create({
-  baseURL: "http://localhost:5000/api"
+  baseURL: import.meta.env.VITE_API_URL?.trim() || "http://localhost:5000/api"
 });
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
 
   if (token) {
+    config.headers = config.headers ?? {};
     config.headers.Authorization = `Bearer ${token}`;
   }
 
@@ -25,7 +26,9 @@ api.interceptors.response.use(
 
       queryClient.clear();
 
-      window.location.href = "/login";
+      if (window.location.pathname !== "/login") {
+        window.location.replace("/login");
+      }
 
     }
 

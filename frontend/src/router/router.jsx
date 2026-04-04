@@ -4,6 +4,7 @@ import Home from "../pages/Home";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import Dashboard from "../pages/Dashboard";
+import CreateNote from "../pages/CreateNote";
 import NoteDetail from "../pages/NoteDetail";
 
 import ProtectedRoute from "../components/ProtectedRoute";
@@ -35,8 +36,27 @@ function Router(){
   }
  />
 
-          
-   <Route path="/notes/:id" element={<NoteDetail />} />
+ <Route
+  path="/notes/new"
+  element={
+      <ErrorBoundary>
+      <ProtectedRoute>
+         <CreateNote />
+      </ProtectedRoute>
+      </ErrorBoundary>
+  }
+ />
+
+ <Route
+  path="/notes/:id"
+  element={
+      <ErrorBoundary>
+      <ProtectedRoute>
+         <NoteDetail />
+      </ProtectedRoute>
+      </ErrorBoundary>
+  }
+ />
  </Routes>
 
  </BrowserRouter>

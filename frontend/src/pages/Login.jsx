@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
+import { Link, useNavigate } from "react-router-dom";
 import { loginUser } from "../api/auth";
-import { useNavigate } from "react-router-dom";
+import AuthLayout from "../components/AuthLayout";
 
 function Login() {
-
   const navigate = useNavigate();
-
   const [form, setForm] = useState({
     email: "",
     password: ""
@@ -15,65 +14,84 @@ function Login() {
   const mutation = useMutation({
     mutationFn: loginUser,
     onSuccess: (data) => {
-
       localStorage.setItem("token", data.token);
-
       navigate("/dashboard");
-
     }
   });
 
-  const handleChange = (e) => {
+  const errorMessage = mutation.error?.response?.data?.message;
 
+  const handleChange = (e) => {
     setForm({
       ...form,
       [e.target.name]: e.target.value
     });
-
   };
 
   const handleSubmit = (e) => {
-
     e.preventDefault();
-
     mutation.mutate(form);
-
   };
 
   return (
+    <AuthLayout
+      eyebrow="Welcome Back"
+      title="Pick up your notes where you left them."
+      description="Log in and continue writing."
+      footer={
+        <p>
+          New here?{" "}
+          <Link to="/register" className="font-semibold text-[var(--accent-deep)]">
+            Create an account
+          </Link>
+        </p>
+      }
+    >
+      <div className="space-y-2">
+        <p className="section-kicker">Sign In</p>
+        <h2 className="title-md">Log in to your workspace</h2>
+      </div>
 
-    <div className="flex justify-center items-center h-screen">
+      {errorMessage ? <div className="status-error">{errorMessage}</div> : null}
 
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white p-8 shadow-md rounded w-96"
-      >
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label htmlFor="email" className="field-label">
+            Email
+          </label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            value={form.email}
+            autoComplete="email"
+            placeholder="you@example.com"
+            onChange={handleChange}
+            className="field-input"
+          />
+        </div>
 
-        <h2 className="text-xl text-red-500 mb-4">Login</h2>
+        <div>
+          <label htmlFor="password" className="field-label">
+            Password
+          </label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            value={form.password}
+            autoComplete="current-password"
+            placeholder="Enter your password"
+            onChange={handleChange}
+            className="field-input"
+          />
+        </div>
 
-        <input
-          name="email"
-          placeholder="Email"
-          onChange={handleChange}
-          className="border p-2 w-full mb-3"
-        />
-
-        <input
-          name="password"
-          type="password"
-          placeholder="Password"
-          onChange={handleChange}
-          className="border p-2 w-full mb-3"
-        />
-
-        <button className="bg-black text-white w-full p-2">
-          Login
+        <button className="btn btn-primary w-full" disabled={mutation.isPending}>
+          {mutation.isPending ? "Logging in..." : "Log In"}
         </button>
-
       </form>
-
-    </div>
-
+    </AuthLayout>
   );
 }
 

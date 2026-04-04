@@ -1,91 +1,54 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-function NoteCard({ note, onDelete, onUpdate }) {
-
+function NoteCard({ note }) {
   const navigate = useNavigate();
 
-  const [editing,setEditing] = useState(false);
-  const [title,setTitle] = useState(note.title);
-  const [content,setContent] = useState(note.content);
-
-  const save = () => {
-
-    onUpdate(note._id,{
-      title,
-      content
-    });
-
-    setEditing(false);
-
-  };
-
+  const formattedDate = new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric"
+  }).format(new Date(note.updatedAt || note.createdAt));
 
   return (
-    <div onClick={() => navigate(`/notes/${note._id}`)}>
+    <div
+      onClick={() => navigate(`/notes/${note._id}`)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          navigate(`/notes/${note._id}`);
+        }
+      }}
+      role="button"
+      tabIndex={0}
+      className="note-card"
+    >
+      <div className="flex h-full flex-col gap-5 p-5 sm:p-6">
+        <div className="space-y-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="badge">{formattedDate}</span>
+          </div>
 
-    <div className="border p-4 flex justify-between">
-
-      {editing ? (
-
-        <div className="flex-1">
-
-          <input
-            value={title}
-            onChange={(e)=>setTitle(e.target.value)}
-            className="border p-2 w-full mb-2"
-          />
-
-          <textarea
-            value={content}
-            onChange={(e)=>setContent(e.target.value)}
-            className="border p-2 w-full mb-2"
-          />
-
-          <button
-            onClick={save}
-            className="bg-green-500 text-white px-3 py-1"
-          >
-            Save
-          </button>
-
-        </div>
-
-      ) : (
-
-        <div>
-
-          <h3 className="font-bold">
+          <h3 className="title-md text-[1.4rem] sm:text-[1.6rem]">
             {note.title}
           </h3>
 
-          <p>{note.content}</p>
-
+          <p className="note-card__content text-sm sm:text-[0.98rem]">
+            {note.content}
+          </p>
         </div>
 
-      )}
+        <div className="mt-auto flex items-center justify-between gap-3 border-t border-[rgba(27,37,40,0.08)] pt-4">
+          <p className="mini-mono text-[0.72rem] text-[var(--muted)]">
+            Open note to edit or delete
+          </p>
 
-      <div className="flex flex-col gap-2 ml-4">
-
-        <button onClick={()=>setEditing(true)}>
-          Edit
-        </button>
-
-        <button
-          onClick={()=>onDelete(note._id)}
-          className="text-red-500"
-        >
-          Delete
-        </button>
-
+          <span className="text-sm font-medium text-[var(--accent-deep)]">
+            Read note
+          </span>
+        </div>
       </div>
-
     </div>
-
-    </div>
-
   );
-
 }
 
 export default NoteCard;

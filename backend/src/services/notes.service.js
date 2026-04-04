@@ -1,4 +1,12 @@
 import Note from "../models/Note.js";
+import mongoose from "mongoose";
+import ApiError from "../utils/apiError.js";
+
+const ensureValidNoteId = (noteId) => {
+  if (!mongoose.isValidObjectId(noteId)) {
+    throw new ApiError(400, "Invalid note id");
+  }
+};
 
 export const createNote = async ({ title, content, userId }) => {
 
@@ -31,13 +39,14 @@ export const getNotes = async (userId, page = 1, limit = 10, search = "") => {
   return {
     notes,
     page,
-    totalPages: Math.ceil(total / limit),
+    totalPages: Math.max(1, Math.ceil(total / limit)),
     total
   };
 
 };
 
 export const getNoteById = async (noteId, userId) => {
+  ensureValidNoteId(noteId);
 
   const note = await Note.findOne({
     _id: noteId,
@@ -45,7 +54,7 @@ export const getNoteById = async (noteId, userId) => {
   });
 
   if (!note) {
-    throw new Error("Note not found");
+    throw new ApiError(404, "Note not found");
   }
 
   return note;
@@ -53,18 +62,31 @@ export const getNoteById = async (noteId, userId) => {
 };
 
 export const updateNote = async (noteId, userId, data) => {
+  ensureValidNoteId(noteId);
+
+  const allowedFields = ["title", "content"];
+  const updates = Object.fromEntries(
+    Object.entries(data).filter(([key]) => allowedFields.includes(key))
+  );
+
+  if (Object.keys(updates).length === 0) {
+    throw new ApiError(400, "No valid fields to update");
+  }
 
   const note = await Note.findOneAndUpdate(
     {
       _id: noteId,
       user: userId
     },
-    data,
-    { new: true }
+    updates,
+    {
+      new: true,
+      runValidators: true
+    }
   );
 
   if (!note) {
-    throw new Error("Note not found");
+    throw new ApiError(404, "Note not found");
   }
 
   return note;
@@ -72,6 +94,7 @@ export const updateNote = async (noteId, userId, data) => {
 };
 
 export const deleteNote = async (noteId, userId) => {
+  ensureValidNoteId(noteId);
 
   const note = await Note.findOneAndDelete({
     _id: noteId,
@@ -79,7 +102,7 @@ export const deleteNote = async (noteId, userId) => {
   });
 
   if (!note) {
-    throw new Error("Note not found");
+    throw new ApiError(404, "Note not found");
   }
 
   return { message: "Note deleted" };
