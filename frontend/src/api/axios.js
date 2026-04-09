@@ -2,7 +2,7 @@ import axios from "axios";
 import { queryClient } from "../lib/queryClient";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL?.trim() || "http://localhost:5000/api"
+  baseURL: import.meta.env.VITE_API_URL?.trim() + "/api" || "http://localhost:5000/api"
 });
 
 api.interceptors.request.use((config) => {
