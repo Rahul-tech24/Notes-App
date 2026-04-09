@@ -8,6 +8,7 @@ import CreateNote from "../pages/CreateNote";
 import NoteDetail from "../pages/NoteDetail";
 
 import ProtectedRoute from "../components/ProtectedRoute";
+import PublicRoute from "../components/PublicRoute";
 import ErrorBoundary from "../components/ErrorBoundary";
 
 
@@ -21,9 +22,23 @@ function Router(){
 
  <Route path="/" element={<Home/>} />
 
- <Route path="/login" element={<Login/>} />
+ <Route
+  path="/login"
+  element={
+      <PublicRoute>
+         <Login />
+      </PublicRoute>
+  }
+ />
 
- <Route path="/register" element={<Register/>} />
+ <Route
+  path="/register"
+  element={
+      <PublicRoute>
+         <Register />
+      </PublicRoute>
+  }
+ />
 
  <Route
   path="/dashboard"
