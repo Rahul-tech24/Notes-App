@@ -4,6 +4,7 @@ import cors from "cors";
 import authRoutes from "./routes/auth.routes.js";
 import notesRoutes from "./routes/notes.routes.js";
 import errorHandler from "./middleware/error.middleware.js";
+import ApiError from "./utils/apiError.js";
 
 import limiter from "./middleware/rateLimit.middleware.js";
 
@@ -11,28 +12,24 @@ const app = express();
 
 const allowedOrigins = [
   "http://localhost:5173",
-  "http://127.0.0.1:5173",
-  ...(process.env.CLIENT_URL ? process.env.CLIENT_URL.split(",") : [])
+  process.env.CLIENT_URL
 ]
-  .map((origin) => origin.trim())
-  .filter(Boolean);
 
 app.use(
   cors({
-    origin(origin, callback) {
-      if (!origin) {
-        return callback(null, true);
-      }
+    origin: function (origin, callback) {
+
+      if (!origin) return callback(null, true)
 
       if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
+        return callback(null, true)
       }
 
-      return callback(new Error(`CORS blocked for origin: ${origin}`));
+      return callback(new Error("Not allowed by CORS"))
     },
     credentials: true
   })
-);
+)
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(limiter);
