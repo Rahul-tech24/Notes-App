@@ -11,6 +11,7 @@ function Register() {
     email: "",
     password: ""
   });
+  
 
   const mutation = useMutation({
     mutationFn: registerUser,
