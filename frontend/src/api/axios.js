@@ -1,8 +1,15 @@
 import axios from "axios";
 import { queryClient } from "../lib/queryClient";
 
+const envBaseUrl = import.meta.env.VITE_API_URL?.trim();
+const normalizedBaseUrl = envBaseUrl
+  ? envBaseUrl.replace(/\/+$/, "").endsWith("/api")
+    ? envBaseUrl.replace(/\/+$/, "")
+    : `${envBaseUrl.replace(/\/+$/, "")}/api`
+  : "http://localhost:5000/api";
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL?.trim() + "/api" || "http://localhost:5000/api"
+  baseURL: normalizedBaseUrl
 });
 
 api.interceptors.request.use((config) => {
